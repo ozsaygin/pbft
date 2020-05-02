@@ -1,3 +1,5 @@
+# Author: Oguz Ozsaygin
+
 import json
 import os
 import sys
