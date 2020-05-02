@@ -48,9 +48,9 @@ def VerifyElection(n, t, logname):
 #######
 # Verification Part
 #######
-n  = 20   # number of peers
+n  = 50   # number of peers
 t = 100   # hash count 
-ell = 3 # number of logs to test ell <= n
+ell = 50 # number of logs to test ell <= n
 
 fname = 'sample_election_'
 for i in range(ell):
