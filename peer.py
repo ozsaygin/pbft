@@ -95,7 +95,7 @@ def start(id: int, n: int, t: int):
     print('Node ' + str(id) + ' announces leader: ' + str(leader))
 
     # Write results to file and sign random numbers
-    FILENAME = 'sample_election_' + str(id) + '.log'
+    FILENAME = 'election_' + str(id) + '.log'
     f = open(FILENAME, 'w+')
     text += str(leader) + '\n'
     h = SHA3_256.new(text.encode('utf-8'))
