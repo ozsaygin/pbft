@@ -52,7 +52,7 @@ n  = 50   # number of peers
 t = 100   # hash count 
 ell = 50 # number of logs to test ell <= n
 
-fname = 'sample_election_'
+fname = 'election_'
 for i in range(ell):
     print("#### Filename:", fname+str(i)+".log")
     ret = VerifyElection(n, t, fname+str(i)+".log")

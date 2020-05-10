@@ -19,7 +19,15 @@ class Peers(Resource):
     def get(self):
         return peers, 200
 
+class PeersPid(Resource):
+    def get(self, pid):
+        for p in peers:
+            if p['pid'] == int(pid):
+                return p, 200
+        
+
 api.add_resource(Peers, "/peers")
+api.add_resource(PeersPid, "/peers/<pid>")
 
 if __name__ == "__main__":
     app.run(debug=True)
