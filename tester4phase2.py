@@ -13,8 +13,8 @@ import sys
 ## Note that verifiers is a list constructed from the public keys of the peers
 ## You need to get them (i.e., verify_keys) from the index server using REST API
 ell = 10  # transaction count in a block
-r = 1     # number of block
-n = 4     # number of peers
+r = 5     # number of blockc
+n = 10     # number of peers
 tolerance = (n-1)//3
 print("Fault tolerance degree (f): ", tolerance)
 
