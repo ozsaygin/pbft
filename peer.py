@@ -16,10 +16,10 @@ from Crypto.Hash import SHA3_256
 from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 
-n = 4  # number of peers
+n = 10  # number of peers
 t = 10  # number of hash operations
 ell = 10  # number of transactions
-r = 1  # number of rounds
+r = 5  # number of rounds
 k = 1  # degree of tolerance
 
 API_URL = 'http://0.0.0.0:5000'
@@ -80,7 +80,7 @@ def start(i: int, pid: int, n: int, t: int):
         peer_infos = response.json()
         for peer in peer_infos:
             node_pids.append(peer['pid'])
-            if peer["id"] != i:
+            if peer["pid"] != pid:
                 # Create a PUSH socket and send random number for other peers
                 peer_ports.append(peer['port'])
                 push_socket = context.socket(zmq.PUSH)
@@ -180,7 +180,6 @@ def start(i: int, pid: int, n: int, t: int):
                     h_val = SHA3_256.new(
                         v_block.encode('utf-8')+h_prev.digest())
                     # verify the signature of validator
-                    print('p')
                     verifier.verify(h_val, int(
                         v_signature).to_bytes(64, byteorder='big'))
                     # accept the block if original block is equal to v_block
@@ -204,9 +203,9 @@ def start(i: int, pid: int, n: int, t: int):
             else:
                 print('Block is declined')
             h_prev = h
+            time.sleep(10)
 
         else:  # Node is a validator
-            time.sleep(3)
             data = pull_socket.recv_json()
             p_block = data['block']
             p_signature = data['signature']
@@ -221,38 +220,35 @@ def start(i: int, pid: int, n: int, t: int):
             verifier = DSS.new(verify_key, 'fips-186-3')
             try:
                 h = SHA3_256.new(p_block.encode('utf-8')+h_prev.digest())
-                print('v')
                 verifier.verify(
                     h, int(p_signature).to_bytes(64, byteorder='big'))
-                signature = signer.sign(h)     # sign the hash of the block
+                v_signature = signer.sign(h)     # sign the hash of the block
                 verified_signs.append(
-                    {'pid': data['pid'], 'signature': data['signature']})
+                    {'pid': data['pid'], 'signature': p_signature})
                 verified_signs.append({'pid': pid, 'signature': str(
-                    int.from_bytes(signature, "big"))})
+                    int.from_bytes(v_signature, "big"))})
                 # wait a while make sure that every node has the original block
-                time.sleep(3)
+                time.sleep(5)
                 for pp in peer_ports:
                     push_socket = context.socket(zmq.PUSH)
                     push_socket.connect("tcp://127.0.0.1:" + str(pp))
                     push_socket.send_json({"block": p_block, "pid": pid, "signature": str(
-                        int.from_bytes(signature, "big"))})
+                        int.from_bytes(v_signature, "big"))})
 
-                time.sleep(3)  # wait to message to propagate
+                time.sleep(5)  # wait to message to propagate
 
                 for _ in range(n-2):  # start to pull from other validators
                     data = pull_socket.recv_json()
                     vv_signature = data['signature']
                     vv_pid = data['pid']
                     vv_block = data['block']
+                    h_vval = SHA3_256.new(vv_block.encode('utf-8')+h_prev.digest())
                     response = requests.get(
                         (API_URL + '/peers/'+str(data['pid'])))
                     vvalidator = response.json()
                     verify_key = ECC.import_key(vvalidator['pubkey'])
                     verifier = DSS.new(verify_key, 'fips-186-3')
                     try:
-                        h_vval = SHA3_256.new(
-                            vv_block.encode('utf-8')+h_prev.digest())
-                        print('vv')
                         verifier.verify(h_vval, int(
                             vv_signature).to_bytes(64, byteorder='big'))
 
@@ -264,7 +260,7 @@ def start(i: int, pid: int, n: int, t: int):
                         print(
                             "The signature of the peer DOES NOT verify: " + str(pid))
                         sys.exit()
-                
+                h_prev = h
                 if num_verified >= k:
                     print('Block has been accepted: ' + str(pid))
                     f = open('block_'+str(pid)+"_"+str(j)+'.log', 'wt')
@@ -273,7 +269,7 @@ def start(i: int, pid: int, n: int, t: int):
                     f.close()
                 else:
                     print('Block is declined')
-                h_prev = h
+                
             except ValueError:
                 print("The signature of the peer DOES NOT verify: " + str(pid))
                 sys.exit()
