@@ -16,11 +16,11 @@ from Crypto.Hash import SHA3_256
 from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 
-n = 10  # number of peers
-t = 10  # number of hash operations
+n = 5  # number of peers
+t = 100  # number of hash operations
 ell = 10  # number of transactions
 r = 5  # number of rounds
-k = 1  # degree of tolerance
+k = (n-1)//3  # degree of tolerance
 
 API_URL = 'http://0.0.0.0:5000'
 BASE_PORT = 10000
@@ -132,11 +132,13 @@ def start(i: int, pid: int, n: int, t: int):
     f.write(text)
     f.close()
 
-    print('Consesus protocol is initated...')
+    
     h_prev = SHA3_256.new("".encode('utf-8'))  # inital h_prev is empty string
     for j in range(0, r):  # Run consensus for r rounds
-        print('Round %d' % j)
+        
         if leader == pid:  # Node is the leader
+            print('Consesus protocol is initated...')
+            print('Round %d' % j)
             block = ""
             for i in range(ell):  # generate a block with random transactions
                 tau = "".join([random.choice(string.ascii_letters + string.digits)
@@ -194,8 +196,8 @@ def start(i: int, pid: int, n: int, t: int):
                     print("The signature of the peer DOES NOT verify " + str(pid))
                     sys.exit()
 
-            if num_verified >= k:  # accept the block if greater than tolerance
-                print('Block has been accepted')
+            if num_verified >= 2*k:  # accept the block if greater than tolerance
+                print('Block has been accepted by proposer')
                 f = open('block_'+str(pid)+"_"+str(j)+'.log', 'wt')
                 f.write(block)
                 f.write(json.dumps(verified_signs))
@@ -261,8 +263,8 @@ def start(i: int, pid: int, n: int, t: int):
                             "The signature of the peer DOES NOT verify: " + str(pid))
                         sys.exit()
                 h_prev = h
-                if num_verified >= k:
-                    print('Block has been accepted: ' + str(pid))
+                if num_verified >= 2*k:
+                    print('Block has been accepted validator with %d pid' % pid)
                     f = open('block_'+str(pid)+"_"+str(j)+'.log', 'wt')
                     f.write(data['block'])
                     f.write(json.dumps(verified_signs))

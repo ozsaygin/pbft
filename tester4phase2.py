@@ -6,15 +6,15 @@ import random
 import math
 import string
 import json
-from random import shuffle
 import requests
+from random import shuffle
 import sys
 
 ## Note that verifiers is a list constructed from the public keys of the peers
 ## You need to get them (i.e., verify_keys) from the index server using REST API
 ell = 10  # transaction count in a block
 r = 5     # number of blockc
-n = 10     # number of peers
+n = 5     # number of peers
 tolerance = (n-1)//3
 print("Fault tolerance degree (f): ", tolerance)
 
@@ -64,9 +64,9 @@ for k in range(n):    # check the log file of each peer
             try:
                 verifiers[pid].verify(h, signature)
                 cnt += 1
-                print ("The signature of the peer %d for the block %d verifies" %(pid, k))
+                print ("The signature of the peer %d for the block %d verifies" %(pid, j))
             except ValueError:
-                print ("The signature of the peer %d for the block %d DOES NOT verify" %(pid, k))
+                print ("The signature of the peer %d for the block %d DOES NOT verify" %(pid, j))
                 sys.exit()
         h_prev = h
         if cnt > 2*tolerance:
