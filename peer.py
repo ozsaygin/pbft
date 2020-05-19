@@ -21,10 +21,10 @@ t = 100  # number of hash operations
 ell = 10  # number of transactions
 r = 5  # number of rounds
 tolerance = (n-1)//3  # degree of tolerance
+
 k = 0
 ScenarioNo =1 
 is_leader_honest = True
-
 if ScenarioNo == 1: 
     k = tolerance
 elif ScenarioNo == 3:
@@ -32,6 +32,9 @@ elif ScenarioNo == 3:
 else:
     raise('Invalid option')
     sys.exit()
+
+API_URL = "http://0.0.0.0:5000"
+BASE_PORT = 10000
 
 def generate_block(ell):
     block = ""
